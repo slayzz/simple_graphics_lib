@@ -1,4 +1,5 @@
 .eslintrc.js
 .jshintrc
+.tern-project
 package.json
 /node_modules

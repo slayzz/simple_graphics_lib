@@ -27,21 +27,20 @@ var Drawer = function() {
 
             var max = Math.max.apply(null, cnvs.task);
 
-            cnvs.task.forEach(function(elem, i, selfArr) {
-                var elemPercent = elem * 100 / max;
+            cnvs.task.forEach(function(elem) {
                 var height = canvasHeight / 100 * (elem * 100 / max);
-                ctx.fillStyle = "rgb(" + Math.ceil(Math.random() * 200) + ", 0," +  Math.ceil(Math.random() * 200) + ")";
+                ctx.fillStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' +  Math.ceil(Math.random() * 200) + ')';
                 ctx.fillRect (x, canvasHeight, widthOfGraph, -height);
                 x += widthOfGraph;
             });
 
-        })
+        });
     }
 
     drw.histogram = function(task) {
         var canvas = cnvsBase.cloneNode(true);
         taskCanvas.push({canvas: canvas, task: task});
-        canvasWidth = window.innerWidth - 25
+        canvasWidth = window.innerWidth - 25;
         canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
         document.body.appendChild(canvas);
 
@@ -71,7 +70,7 @@ var Drawer = function() {
     };
 
     return drw;
-}
+};
 
 var drawer = Drawer();
 
@@ -88,4 +87,4 @@ function startDraw(obj) {
 
 Object.prototype.draw = function() {
     startDraw(this);
-}
+};

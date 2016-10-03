@@ -1,0 +1,4 @@
+.eslintrc.js
+.jshintrc
+package.json
+/node_modules

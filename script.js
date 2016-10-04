@@ -1,5 +1,22 @@
 'use strict';
 (function() {
+    function debounce(func, wait, immediate) {
+        var timeout;
+        return function() {
+            var context = this,
+                args = arguments;
+            var later = function() {
+                timeout = null;
+                if (!immediate)
+                    func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow)
+                func.apply(context, args);
+        };
+    }
 
     var Drawer = function() {
         var drw = {};
@@ -18,13 +35,13 @@
         }
 
         function canvasResizing(canvas) {
-            window.addEventListener('resize', function(e) {
+            window.addEventListener('resize', debounce(function(e) {
                 canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
                 canvasWidth = window.innerWidth - 25;
                 canvas.width = canvasWidth;
                 canvas.height = canvasHeight;
                 draw();
-            });
+            }, 50));
         }
 
         function histoLogic(ctx, task) {
@@ -63,15 +80,15 @@
                 var ctx = cnvs.canvas.getContext('2d');
 
                 switch (cnvs.type) {
-                case 'histo':
-                    histoLogic(ctx, cnvs.task);
-                    break;
-                case 'histoChar':
-                    histoCharLogic(ctx, cnvs.task);
-                    break;
-                default:
-                    console.log('LOL');
-                    break;
+                    case 'histo':
+                        histoLogic(ctx, cnvs.task);
+                        break;
+                    case 'histoChar':
+                        histoCharLogic(ctx, cnvs.task);
+                        break;
+                    default:
+                        console.log('LOL');
+                        break;
                 }
 
             });
@@ -116,8 +133,8 @@
                 return drawer.histogram(obj);
             if (obj[0].length)
                 return drawer.histogram(obj);
+            }
         }
-    }
 
     Object.prototype.draw = function() {
         startDraw(this, drawer);

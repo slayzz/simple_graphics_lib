@@ -24,6 +24,11 @@
         var cnvsBase = document.createElement('canvas');
         var canvasWidth = 0;
         var canvasHeight = 0;
+        var librLogicFunc = {
+            histo: histoLogic,
+            histoChar: histoCharLogic,
+            scatterPlot: scatterPlotLogic
+        };
 
         function setBase(task, type) {
             var canvas = cnvsBase.cloneNode(true);
@@ -31,15 +36,12 @@
             canvasWidth = window.innerWidth - 25;
             canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
             document.body.appendChild(canvas);
-            return canvas;
         }
 
-        function canvasResizing(canvas) {
-            window.addEventListener('resize', debounce(function(e) {
+        function canvasResizing() {
+            window.addEventListener('resize', debounce(function() {
                 canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
                 canvasWidth = window.innerWidth - 25;
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
                 draw();
             }, 50));
         }
@@ -73,54 +75,85 @@
             });
         }
 
+        function scatterPlotLogic(ctx, task) {
+            var maxX = 0;
+            var maxY = 0;
+            task.forEach(function(el) {
+                if (maxX < el.x)
+                    maxX = el.x;
+                if (maxY < el.y)
+                    maxY = el.y;
+            });
+
+            maxX = (maxX * 0.3) + maxX;
+            maxY = (maxY * 0.3) + maxY;
+
+            var sizeSquareX = canvasWidth / maxX;
+            var sizeSquareY = canvasHeight / maxY;
+            var countX = canvasWidth / sizeSquareX;
+            var countY = canvasHeight / sizeSquareY;
+            ctx.strokeStyle = '#DCDCDC';
+            for (var i = 0, y = 0; i <  countY; i++) {
+                for(var j = 0,x = 0; j < countX; j++ ) {
+                    ctx.strokeRect(x, y, sizeSquareX, sizeSquareY);
+                    x += sizeSquareX;
+                }
+                y += sizeSquareY;
+            }
+
+            task.forEach(function(el) {
+                var x = canvasWidth / 100 * (el.x * 100 / maxX);
+                var y = canvasHeight / 100 * (el.y * 100 / maxY);
+                // ctx.strokeStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
+                ctx.fillStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
+                ctx.beginPath();
+                ctx.arc(x, y, el.r, 0, Math.PI*2, true);
+                ctx.stroke();
+                ctx.fill();
+            });
+
+        }
+
         function draw() {
             taskCanvas.forEach(function(cnvs) {
                 cnvs.canvas.height = canvasHeight;
                 cnvs.canvas.width = canvasWidth;
                 var ctx = cnvs.canvas.getContext('2d');
-
-                switch (cnvs.type) {
-                    case 'histo':
-                        histoLogic(ctx, cnvs.task);
-                        break;
-                    case 'histoChar':
-                        histoCharLogic(ctx, cnvs.task);
-                        break;
-                    default:
-                        console.log('LOL');
-                        break;
+                let haveIt = Object.keys(librLogicFunc).some(function(key) {
+                    return key == cnvs.type;
+                });
+                if (!haveIt) {
+                    throw 'Нет функции в draw ->' + cnvs.type;
                 }
-
+                librLogicFunc[cnvs.type](ctx, cnvs.task);
             });
         }
 
         drw.histogram = function(task) {
-            var canvas = setBase(task, 'histo');
-            canvasResizing(canvas);
+            setBase(task, 'histo');
             draw();
         };
 
         drw.histogramChars = function(task) {
-            var canvas = setBase(task, 'histoChar');
-            canvasResizing(canvas);
+            setBase(task, 'histoChar');
             draw();
         };
 
-        drw.stckBarChart = function(task) {
-            var canvas = cnvsBase.cloneNode(true);
+        // drw.stckBarChart = function(task) {
+        //     var canvas = cnvsBase.cloneNode(true);
+        //
+        // };
 
-        };
-
-        drw.lineChart = function(task) {
-            var canvas = cnvsBase.cloneNode(true);
-
-        };
+        // drw.scatterPlot = function(task) {
+        //
+        // };
 
         drw.scatterPlot = function(task) {
-            var canvas = cnvsBase.cloneNode(true);
-
+            setBase(task, 'scatterPlot');
+            draw();
         };
 
+        canvasResizing();
         return drw;
     };
     var drawer = Drawer();
@@ -133,8 +166,10 @@
                 return drawer.histogram(obj);
             if (obj[0].length)
                 return drawer.histogram(obj);
-            }
+            if (typeof obj[0] == 'object')
+                return drawer.scatterPlot(obj);
         }
+    }
 
     Object.prototype.draw = function() {
         startDraw(this, drawer);

@@ -21,6 +21,8 @@
     var Drawer = function() {
         var drw = {};
         var taskCanvas = [];
+        var infelicityX = 25;
+        var infelicityY = 25;
         var cnvsBase = document.createElement('canvas');
         var canvasWidth = 0;
         var canvasHeight = 0;
@@ -33,44 +35,71 @@
         function setBase(task, type) {
             var canvas = cnvsBase.cloneNode(true);
             taskCanvas.push({canvas: canvas, task: task, type: type});
-            canvasWidth = window.innerWidth - 25;
-            canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
+            canvasHeight = (window.innerHeight - infelicityY) / taskCanvas.length;
+            canvasWidth = window.innerWidth - infelicityX;
             document.body.appendChild(canvas);
         }
 
         function canvasResizing() {
             window.addEventListener('resize', debounce(function() {
-                canvasHeight = (window.innerHeight - 25) / taskCanvas.length;
-                canvasWidth = window.innerWidth - 25;
+                canvasHeight = (window.innerHeight - infelicityY) / taskCanvas.length;
+                canvasWidth = window.innerWidth - infelicityX;
                 draw();
             }, 50));
         }
 
         function histoLogic(ctx, task) {
-            var x = 0;
+            var x = infelicityX / 3;
+            // var x = 0;
             var max = Math.max.apply(null, task);
+            max += max / 4;
             var widthOfGraph = canvasWidth / task.length;
 
             task.forEach(function(elem) {
                 var height = canvasHeight / 100 * (elem * 100 / max);
-                ctx.fillStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
-                ctx.fillRect(x, canvasHeight, widthOfGraph, -height);
+                console.log(-height)
+                ctx.lineWidth = 2;
+                // ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
+                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
+                ctx.fillStyle = '#78C0A8';
+                ctx.font='50px Ubuntu';
+                ctx.fillText(elem, x, canvasHeight - height);
+                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
                 x += widthOfGraph;
             });
         }
 
         function histoCharLogic(ctx, task) {
+            var arrOfChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+            'abcdefghijklmnopqrstuvwxyz'.split('');
+
             var numOfChars = task.map(function(char) {
-                return char.charCodeAt(0);
+                for (var i = 0; i < arrOfChars.length; i++) {
+                    if (char === arrOfChars[i]) {
+                        return {num: i, char: arrOfChars[i]};
+                    }
+                }
             });
-            var x = 0;
-            var max = Math.max.apply(null, numOfChars);
+
+            var x = infelicityX / 3;
+            var max = 0;
+            numOfChars.forEach(function(elem) {
+                if (max < elem.num)
+                    max = elem.num;
+            });
+            max += max / 4;
+            // var max = Math.max.apply(null, numOfChars);
             var widthOfGraph = canvasWidth / numOfChars.length;
 
             numOfChars.forEach(function(elem) {
-                var height = canvasHeight / 100 * (elem * 100 / max);
-                ctx.fillStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
-                ctx.fillRect(x, canvasHeight, widthOfGraph, -height);
+                var height = canvasHeight / 100 * (elem.num * 100 / max);
+                ctx.font='50px Ubuntu';
+                ctx.fillText(elem.char, x, canvasHeight - height);
+                ctx.lineWidth = 2;
+
+                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
+                ctx.fillStyle = '#78C0A8';
+                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
                 x += widthOfGraph;
             });
         }
@@ -139,6 +168,11 @@
             draw();
         };
 
+        drw.scatterPlot = function(task) {
+            setBase(task, 'scatterPlot');
+            draw();
+        };
+
         // drw.stckBarChart = function(task) {
         //     var canvas = cnvsBase.cloneNode(true);
         //
@@ -148,17 +182,13 @@
         //
         // };
 
-        drw.scatterPlot = function(task) {
-            setBase(task, 'scatterPlot');
-            draw();
-        };
 
         canvasResizing();
         return drw;
     };
     var drawer = Drawer();
 
-    function startDraw(obj, drawer) {
+    function startDraw(obj) {
         if (obj.length) {
             if (typeof obj[0] == 'string')
                 return drawer.histogramChars(obj);
@@ -172,7 +202,6 @@
     }
 
     Object.prototype.draw = function() {
-        startDraw(this, drawer);
+        startDraw(this);
     };
-
 }());

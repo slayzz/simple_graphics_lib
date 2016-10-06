@@ -30,8 +30,10 @@
             librLogicFunc = {
                 histo: histoLogic,
                 histoChar: histoCharLogic,
-                scatterPlot: scatterPlotLogic
+                scatterPlot: scatterPlotLogic,
+                lineChart: lineChartLogic,
             };
+
 
         function setBase(task, type) {
             var canvas = cnvsBase.cloneNode(true);
@@ -49,12 +51,31 @@
             }, 50));
         }
 
+        function drawSquares(maxX, maxY, ctx) {
+
+            var sizeSquareX = canvasWidth / maxX;
+            var sizeSquareY = canvasHeight / maxY;
+            var countX = canvasWidth / sizeSquareX;
+            var countY = canvasHeight / sizeSquareY;
+            ctx.strokeStyle = '#DCDCDC';
+            for (var i = 0, y = 0; i <  countY; i++) {
+                for(var j = 0,x = 0; j < countX; j++ ) {
+                    ctx.strokeRect(x, y, sizeSquareX, sizeSquareY);
+                    x += sizeSquareX;
+                }
+                y += sizeSquareY;
+            }
+        }
+
+
+
+
         function histoLogic(ctx, task) {
             var x = infelicityX / 3;
             var max = Math.max.apply(null, task);
             var upperMax = max + (max * 0.5);
             var widthOfGraph = canvasWidth / task.length;
-            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 5 ;
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 2 ;
 
 
             task.forEach(function(elem) {
@@ -90,7 +111,7 @@
                     max = elem.num;
             });
             var upperMax = max + (max * 0.5);
-            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 5 ;
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 2 ;
             var widthOfGraph = canvasWidth / numOfChars.length;
 
             numOfChars.forEach(function(elem) {
@@ -116,22 +137,9 @@
                     maxY = el.y;
             });
 
-            maxX = (maxX * 0.3) + maxX;
-            maxY = (maxY * 0.3) + maxY;
-
-            var sizeSquareX = canvasWidth / maxX;
-            var sizeSquareY = canvasHeight / maxY;
-            var countX = canvasWidth / sizeSquareX;
-            var countY = canvasHeight / sizeSquareY;
-            ctx.strokeStyle = '#DCDCDC';
-            for (var i = 0, y = 0; i <  countY; i++) {
-                for(var j = 0,x = 0; j < countX; j++ ) {
-                    ctx.strokeRect(x, y, sizeSquareX, sizeSquareY);
-                    x += sizeSquareX;
-                }
-                y += sizeSquareY;
-            }
-
+            maxX = (maxX * 0.5) + maxX;
+            maxY = (maxY * 0.5) + maxY;
+            drawSquares(maxX, maxY, ctx);
             task.forEach(function(el) {
                 var x = canvasWidth / 100 * (el.x * 100 / maxX);
                 var y = canvasHeight / 100 * (el.y * 100 / maxY);
@@ -145,6 +153,72 @@
             });
 
         }
+
+        function findMaxLineChart(task) {
+            var maxX = 0;
+            var maxY = 0;
+            Object.keys(task).forEach(key => {
+                if (maxX < parseInt(key))
+                    maxX = parseInt(key);
+
+                var maxLocal = Math.max.apply(null, task[key]);
+
+                if (maxY < maxLocal)
+                    maxY = maxLocal;
+            });
+            return {maxY: maxY, maxX: maxX};
+
+
+        }
+
+        function lineChartLogic(ctx, task) {
+            var bestColors = ['#5E412F', '#FCEBB6', '#78C0A8', '#F07818',
+            '#F0A830', '#354458', '#3A9AD9', '#29ABA4', '#E9E0D6', '#EB7260'],
+                colors = [],
+                maxs = findMaxLineChart(task);
+            //Выберем цвета для графиков
+            for (var el in task) {
+                if (task.hasOwnProperty(el))
+                    for (var i = 0; i < task[el].length; i++) {
+                        var pick = Math.ceil(Math.random() * bestColors.length - 1);
+                        colors.push(bestColors[pick]);
+                    }
+                break;
+            }
+            maxs.maxX += (maxs.maxX * 0.1);
+            maxs.maxY += (maxs.maxY * 0.1);
+            var previusPos = [];
+            drawSquares(maxs.maxX, maxs.maxY, ctx);
+
+
+            ctx.lineWidth = 4;
+            Object.keys(task).forEach(function(key,i) {
+                var prevY = [];
+                var x = canvasWidth / 100 * (parseInt(key) * 100 / maxs.maxX);
+                task[key].forEach(function(el,j) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = colors[j];
+                    var y = canvasHeight / 100 * (el * 100 / maxs.maxY);
+                    prevY.push(y);
+                    if (i === 0) {
+                        ctx.moveTo(x,y);
+                        ctx.arc(x, y, infelicityX/10, 0, Math.PI*2, true);
+                        ctx.stroke();
+                        return;
+                    }
+                    ctx.moveTo(previusPos[i-1].x, previusPos[i-1].y[j]);
+                    ctx.lineTo(x, y);
+                    ctx.arc(x, y, infelicityX/10, 0, Math.PI*2, true);
+                    ctx.stroke();
+                });
+                previusPos.push({x:x, y: prevY});
+                // var y = canvasHeight / 100 * (el.y * 100 / maxs.maxY);
+                // ctx.fill();
+            });
+
+        }
+
+
 
         function draw() {
             taskCanvas.forEach(function(cnvs) {
@@ -181,9 +255,10 @@
         //
         // };
 
-        // drw.scatterPlot = function(task) {
-        //
-        // };
+        drw.lineChart = function(task) {
+            setBase(task, 'lineChart');
+            draw();
+        };
 
 
         canvasResizing();
@@ -201,6 +276,9 @@
                 return drawer.histogram(obj);
             if (typeof obj[0] == 'object')
                 return drawer.scatterPlot(obj);
+        }
+        if (typeof obj == 'object') {
+            return drawer.lineChart(obj);
         }
     }
 

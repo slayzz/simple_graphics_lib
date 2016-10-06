@@ -23,7 +23,6 @@
             taskCanvas = [],
             infelicityX = 25,
             infelicityY = 25,
-            fontSize = (infelicityY - (infelicityY / 10)),
             cnvsBase = document.createElement('canvas'),
             canvasWidth = 0,
             canvasHeight = 0,
@@ -52,21 +51,22 @@
 
         function histoLogic(ctx, task) {
             var x = infelicityX / 3;
-            // var x = 0;
             var max = Math.max.apply(null, task);
-            max += max / 4;
+            var upperMax = max + (max * 0.5);
             var widthOfGraph = canvasWidth / task.length;
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 5 ;
+
 
             task.forEach(function(elem) {
-                var height = canvasHeight / 100 * (elem * 100 / max);
+                var height = canvasHeight / 100 * (elem * 100 / upperMax);
                 ctx.lineWidth = 2;
-                // ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
-                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
-                ctx.font=fontSize +'px Sans';
+                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height);
+                // ctx.font = fontSize +'px Sans';
+                ctx.font = fontSize +'px Sans';
                 ctx.fillStyle = '#F07818';
-                ctx.fillText(elem, x, canvasHeight - height - infelicityY);
+                ctx.fillText(elem, x, canvasHeight -height - infelicityY/2 - 2);
                 ctx.fillStyle = '#78C0A8';
-                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
+                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height);
                 x += widthOfGraph;
             });
         }
@@ -89,19 +89,19 @@
                 if (max < elem.num)
                     max = elem.num;
             });
-            max += max / 4;
+            var upperMax = max + (max * 0.5);
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 5 ;
             var widthOfGraph = canvasWidth / numOfChars.length;
 
             numOfChars.forEach(function(elem) {
-                var height = canvasHeight / 100 * (elem.num * 100 / max);
-                ctx.fillStyle = '#F07818';
-                ctx.font = fontSize  +'px Sans';
-                ctx.fillText(elem.char, x, canvasHeight - height);
+                var height = canvasHeight / 100 * (elem.num * 100 / upperMax);
                 ctx.lineWidth = 2;
-
-                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
+                ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height);
+                ctx.font = fontSize +'px Sans';
+                ctx.fillStyle = '#F07818';
+                ctx.fillText(elem.char, x, canvasHeight -height - infelicityY/2 - 2);
                 ctx.fillStyle = '#78C0A8';
-                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
+                ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height);
                 x += widthOfGraph;
             });
         }

@@ -19,18 +19,20 @@
     }
 
     var Drawer = function() {
-        var drw = {};
-        var taskCanvas = [];
-        var infelicityX = 25;
-        var infelicityY = 25;
-        var cnvsBase = document.createElement('canvas');
-        var canvasWidth = 0;
-        var canvasHeight = 0;
-        var librLogicFunc = {
-            histo: histoLogic,
-            histoChar: histoCharLogic,
-            scatterPlot: scatterPlotLogic
-        };
+        var drw = {},
+            taskCanvas = [],
+            infelicityX = 25,
+            infelicityY = 25,
+            fontSize = (infelicityY - (infelicityY / 10)),
+            cnvsBase = document.createElement('canvas'),
+            canvasWidth = 0,
+            canvasHeight = 0,
+
+            librLogicFunc = {
+                histo: histoLogic,
+                histoChar: histoCharLogic,
+                scatterPlot: scatterPlotLogic
+            };
 
         function setBase(task, type) {
             var canvas = cnvsBase.cloneNode(true);
@@ -57,13 +59,13 @@
 
             task.forEach(function(elem) {
                 var height = canvasHeight / 100 * (elem * 100 / max);
-                console.log(-height)
                 ctx.lineWidth = 2;
                 // ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height + infelicityY);
                 ctx.strokeRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
+                ctx.font=fontSize +'px Sans';
+                ctx.fillStyle = '#F07818';
+                ctx.fillText(elem, x, canvasHeight - height - infelicityY);
                 ctx.fillStyle = '#78C0A8';
-                ctx.font='50px Ubuntu';
-                ctx.fillText(elem, x, canvasHeight - height);
                 ctx.fillRect(x, canvasHeight - (infelicityY / 2), widthOfGraph - (infelicityX/2), -height );
                 x += widthOfGraph;
             });
@@ -88,12 +90,12 @@
                     max = elem.num;
             });
             max += max / 4;
-            // var max = Math.max.apply(null, numOfChars);
             var widthOfGraph = canvasWidth / numOfChars.length;
 
             numOfChars.forEach(function(elem) {
                 var height = canvasHeight / 100 * (elem.num * 100 / max);
-                ctx.font='50px Ubuntu';
+                ctx.fillStyle = '#F07818';
+                ctx.font = fontSize  +'px Sans';
                 ctx.fillText(elem.char, x, canvasHeight - height);
                 ctx.lineWidth = 2;
 
@@ -133,9 +135,10 @@
             task.forEach(function(el) {
                 var x = canvasWidth / 100 * (el.x * 100 / maxX);
                 var y = canvasHeight / 100 * (el.y * 100 / maxY);
-                // ctx.strokeStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
-                ctx.fillStyle = 'rgb(' + Math.ceil(Math.random() * 200) + ', 0,' + Math.ceil(Math.random() * 200) + ')';
+                ctx.fillStyle = '#78C0A8';
                 ctx.beginPath();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#545454';
                 ctx.arc(x, y, el.r, 0, Math.PI*2, true);
                 ctx.stroke();
                 ctx.fill();

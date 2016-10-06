@@ -32,6 +32,8 @@
                 histoChar: histoCharLogic,
                 scatterPlot: scatterPlotLogic,
                 lineChart: lineChartLogic,
+                stckBar: stckBarLogic
+
             };
 
 
@@ -75,7 +77,7 @@
             var max = Math.max.apply(null, task);
             var upperMax = max + (max * 0.5);
             var widthOfGraph = canvasWidth / task.length;
-            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 2 ;
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 3 ;
 
 
             task.forEach(function(elem) {
@@ -111,7 +113,7 @@
                     max = elem.num;
             });
             var upperMax = max + (max * 0.5);
-            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 2 ;
+            var fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 3 ;
             var widthOfGraph = canvasWidth / numOfChars.length;
 
             numOfChars.forEach(function(elem) {
@@ -169,6 +171,65 @@
             return {maxY: maxY, maxX: maxX};
 
 
+        }
+
+        function findMaxStckBar(task) {
+            var max = 0;
+            task.forEach(function(elem) {
+                elem.forEach(function(stck, i) {
+                    if (i === 0)
+                        return;
+                    if (max < stck)
+                        max = stck;
+
+                });
+            });
+            return max;
+        }
+
+        function stckBarLogic(ctx, task) {
+            var months = ['jan', 'feb','mar', 'apr', 'may', 'jun',
+             'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+                x = infelicityX / 3,
+                bestColors = ['#5E412F', '#FCEBB6', '#78C0A8', '#F07818',
+            '#F0A830', '#354458', '#3A9AD9', '#29ABA4', '#E9E0D6', '#EB7260'],
+                colors = [],
+                max = findMaxStckBar(task),
+                upperMax = max + (max * 0.5),
+                j = 0;
+
+            //Выберем цвета для графиков
+            while (j < 1) {
+                for (var i = 1; i < task[j].length; i++) {
+                    var pick = Math.ceil(Math.random() * bestColors.length - 1);
+                    colors.push(bestColors[pick]);
+                }
+                j++;
+            }
+
+            var widthOfGraph = canvasWidth / task.length,
+                fontSize =(canvasHeight -  (canvasHeight / 100 * (max * 100 / upperMax))) / 3 ;
+
+            task.forEach(function(elem, i) {
+                // var currentMax = Math.max.apply(null, elem.slice(1));
+                var prevHeight = null;
+                elem.forEach(function(item, j) {
+                    if (j === 0){
+                        ctx.fillStyle = '#29ABA4';
+                        ctx.font = infelicityY /2 +'px Sans';
+                        ctx.fillText(item, x, canvasHeight - infelicityY/2);
+                        return;
+                    }
+                    if (item === 0 )
+                        return
+                    var height = (canvasHeight / 100 * (item * 100 / max)) / (elem.length - 1);
+                    ctx.strokeRect(x, (canvasHeight - (infelicityY))  - prevHeight, widthOfGraph - (infelicityX/2), -height  );
+                    ctx.fillStyle = bestColors[j + 3];
+                    ctx.fillRect(x, (canvasHeight - (infelicityY)) - prevHeight , widthOfGraph - (infelicityX/2), -height  );
+                    prevHeight += height;
+                })
+                x += widthOfGraph;
+            });
         }
 
         function lineChartLogic(ctx, task) {
@@ -250,10 +311,10 @@
             draw();
         };
 
-        // drw.stckBarChart = function(task) {
-        //     var canvas = cnvsBase.cloneNode(true);
-        //
-        // };
+        drw.stckBarChart = function(task) {
+            setBase(task, 'stckBar');
+            draw();
+        };
 
         drw.lineChart = function(task) {
             setBase(task, 'lineChart');
@@ -273,7 +334,7 @@
             if (typeof obj[0] == 'number')
                 return drawer.histogram(obj);
             if (obj[0].length)
-                return drawer.histogram(obj);
+                return drawer.stckBarChart(obj);
             if (typeof obj[0] == 'object')
                 return drawer.scatterPlot(obj);
         }
